@@ -10,7 +10,7 @@ The main purpose of the platform is to allow customers to check the parking layo
 ### What does the project include?
 The project is a modern Single Page Application (SPA) built with cutting-edge technologies. Its key features include:
 
-1 . Interactive 3D Parking Visualization (Performance-Optimized):
+1. Interactive 3D Parking Visualization (Performance-Optimized):
 The application features an interactive 3D scene of the parking lot, allowing users to view the spatial layout directly in the browser. Built using React Three Fiber and Three.js, this functionality is fully optimized at the GPU level (utilizing Instanced Rendering for wheels and global reuse of geometries/materials) to eliminate high battery consumption and memory leaks on mobile devices.
 
 2. Smart GPS Navigation:
