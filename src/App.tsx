@@ -10,7 +10,11 @@ import {
 } from 'lucide-react';
 import ParkingScene3D from './components/ParkingScene3D';
 
-const FacebookIcon = ({ size = 24, ...props }) => (
+interface IconProps extends React.SVGProps<SVGSVGElement> {
+  size?: number;
+}
+
+const FacebookIcon = ({ size = 24, ...props }: IconProps) => (
   <svg
     viewBox="0 0 24 24"
     width={size}
@@ -26,7 +30,7 @@ const FacebookIcon = ({ size = 24, ...props }) => (
   </svg>
 );
 
-const WhatsAppIcon = ({ size = 24, ...props }) => (
+const WhatsAppIcon = ({ size = 24, ...props }: IconProps) => (
   <svg
     viewBox="0 0 24 24"
     width={size}
@@ -38,7 +42,7 @@ const WhatsAppIcon = ({ size = 24, ...props }) => (
   </svg>
 );
 
-const TelegramIcon = ({ size = 24, ...props }) => (
+const TelegramIcon = ({ size = 24, ...props }: IconProps) => (
   <svg
     viewBox="0 0 24 24"
     width={size}

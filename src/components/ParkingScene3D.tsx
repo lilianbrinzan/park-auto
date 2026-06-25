@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera, Instances, Instance } from '@react-three/drei';
 import * as THREE from 'three';
@@ -98,18 +98,23 @@ const groundMaterial = new THREE.MeshStandardMaterial({
   metalness: 0.05,
 });
 
-const WHEEL_POSITIONS = [
+const WHEEL_POSITIONS: [number, number, number][] = [
   [-0.7, -0.25, 0.55], // Front Left
   [0.7, -0.25, 0.55],  // Rear Left
   [-0.7, -0.25, -0.55], // Front Right
   [0.7, -0.25, -0.55],  // Rear Right
 ];
 
+interface GlassCarProps {
+  position?: [number, number, number];
+  active?: boolean;
+}
+
 // Procedural sleek 3D Car Model with Glassmorphic materials
-function GlassCar({ position = [0, 0.4, 0], active = false }) {
-  const carRef = useRef();
+function GlassCar({ position = [0, 0.4, 0], active = false }: GlassCarProps) {
+  const carRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
-  const positionRef = useRef(position);
+  const positionRef = useRef<[number, number, number]>(position);
 
   // Sincronizăm prop-ul de poziție cu ref-ul local pentru a evita stuttering în useFrame
   useEffect(() => {
@@ -211,7 +216,7 @@ export default function ParkingScene3D() {
     const mediaQuery = window.matchMedia('(max-width: 767px)');
     setIsMobile(mediaQuery.matches);
 
-    const handleChange = (e) => {
+    const handleChange = (e: MediaQueryListEvent) => {
       setIsMobile(e.matches);
     };
 

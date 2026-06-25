@@ -1,12 +1,10 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
-import React from 'react';
 import App from './App';
 
 // Mock IntersectionObserver for Framer Motion support in jsdom
-global.IntersectionObserver = class IntersectionObserver {
-  constructor() {}
+(globalThis as any).IntersectionObserver = class IntersectionObserver {
   observe() {}
   unobserve() {}
   disconnect() {}
