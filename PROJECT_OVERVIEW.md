@@ -1,40 +1,45 @@
-# park-auto - Platformă Web pentru Servicii Parcare Premium
+# park-auto - Web Platform for Premium Parking Services
 
-### Despre Proiect
-**park-auto** este o aplicație web modernă creată pentru a oferi o interfață intuitivă și interactivă utilizatorilor care caută un loc de parcare securizat în centrul orașului Chișinău, localizat pe strada Sfatul Țării, nr. 2.
+### About the Project
+park-auto is a modern web application designed to offer an intuitive and interactive interface for users looking for a secure parking space in the center of Chișinău, located at 2 Sfatul Țării Street.
 
-Scopul principal al platformei este de a permite clienților să verifice dispunerea locurilor de parcare în format tridimensional, să obțină instrucțiuni de navigare sigure și rapide prin multiple servicii GPS, și să contacteze direct administrația parcării.
-
----
-
-### Ce conține proiectul?
-
-Proiectul este o aplicație web de tip Single Page Application (pagină unică) realizată cu tehnologii de ultimă generație. Punctele sale cheie includ:
-
-1. **Vizualizare Interactivă 3D a Parcării (Optimizată pentru Performanță):**
-   Aplicația conține o scenă 3D interactivă a parcării, permițând utilizatorilor să vadă dispunerea locurilor direct în browser. Această funcționalitate utilizează React Three Fiber și Three.js, fiind complet optimizată la nivel GPU (prin Instanced Rendering pentru roți și refolosirea globală a geometriilor/materialelor) pentru a elimina consumul ridicat de baterie și scurgerile de memorie pe telefoanele mobile.
-
-2. **Navigare Inteligentă (Smart GPS Navigation):**
-   Coordonatele GPS sunt setate cu precizie ridicată la locația exactă: **47.02269, 28.81857**. Utilizatorul poate selecta navigatorul preferat direct din interfață:
-   - **Google Maps:** Deschide automat aplicația nativă pe telefoanele iOS/Android (folosind protocolul `geo:`) sau versiunea web pe desktop.
-   - **Waze:** Utilizează un link universal web care asigură redirecționarea nativă fără erori de protocol.
-   - **Parkopedia:** Oferă acces direct la platforma de indexare a parcărilor cu coordonatele prestabilite.
-
-3. **Canale de Comunicare Securizate direct pe Mobil:**
-   Sunt integrate scurtături rapide pentru asistență și interacțiune prin WhatsApp, Telegram și pagina oficială de Facebook a serviciului.
-
-4. **Securitate Sporită la Redirecționare:**
-   Toate legăturile externe care se deschid în file noi utilizează atributul de securitate `rel="noopener noreferrer"`, eliminând vulnerabilitatea de tip *Reverse Tabnabbing* și garantând că utilizatorii navighează în siguranță.
-
-5. **Mediu de Execuție Securizat (Docker Sandboxing):**
-   Proiectul include un fișier de configurare Docker (`.gemini/sandbox.Dockerfile`) dedicat rulării instrucțiunilor și uneltelor asistentului de dezvoltare într-un mediu complet izolat (sandbox) pentru protecția sistemului gazdă.
+The main purpose of the platform is to allow customers to check the parking layout in a three-dimensional format, obtain safe and fast navigation routes via multiple GPS services, and directly contact the parking administration.
 
 ---
 
-### Detalii Tehnice (Simplificate)
+### What does the project include?
+The project is a modern Single Page Application (SPA) built with cutting-edge technologies. Its key features include:
 
-*   **React & Vite:** Tehnologia de bază folosită pentru construirea interfeței de utilizator, asigurând o încărcare extrem de rapidă și un bundle de producție compact.
-*   **React Three Fiber & Three.js:** Biblioteca responsabilă de afișarea parcării în format 3D interactiv direct în canvas-ul HTML5.
-*   **Framer Motion:** Folosită pentru tranzițiile și animațiile elegante ale elementelor din pagină.
-*   **Lucide React:** O colecție de pictograme moderne folosite pentru o navigare vizuală simplă și curată.
-*   **Docker:** Pentru containere securizate în timpul sarcinilor administrative.
+Interactive 3D Parking Visualization (Performance-Optimized):
+The application features an interactive 3D scene of the parking lot, allowing users to view the spatial layout directly in the browser. Built using React Three Fiber and Three.js, this functionality is fully optimized at the GPU level (utilizing Instanced Rendering for wheels and global reuse of geometries/materials) to eliminate high battery consumption and memory leaks on mobile devices.
+
+Smart GPS Navigation:
+GPS coordinates are precisely set to the exact location: 47.02269, 28.81857. Users can select their preferred navigation app directly from the interface:
+
+Google Maps: Automatically opens the native app on iOS/Android devices (using the geo: protocol) or the web version on desktop.
+
+Waze: Utilizes a universal web link that ensures error-free native redirection without protocol issues.
+
+Parkopedia: Provides direct access to the parking indexing platform with pre-configured coordinates.
+
+Secure Mobile Communication Channels:
+Quick shortcuts are integrated for support and interaction via WhatsApp, Telegram, and the official Facebook page of the service.
+
+Enhanced Redirection Security:
+All external links opening in new tabs utilize the rel="noopener noreferrer" security attribute, eliminating Reverse Tabnabbing vulnerabilities and ensuring a safe browsing experience for users.
+
+Secure Execution Environment (Docker Sandboxing):
+The project includes a dedicated Docker configuration file (.gemini/sandbox.Dockerfile) to run the development assistant's instructions and tools within a completely isolated environment (sandbox), protecting the host system.
+
+---
+
+### Technical Details (Simplified)
+React & Vite: The core technology used to build the user interface, ensuring extremely fast loading times and a lightweight production bundle.
+
+React Three Fiber & Three.js: The library responsible for rendering the interactive 3D parking lot directly within the HTML5 canvas.
+
+Framer Motion: Used for smooth and elegant page transitions and UI element animations.
+
+Lucide React: A collection of modern icons used to provide clean, straightforward visual navigation.
+
+Docker: Utilized for secure containerization during administrative tasks.
