@@ -105,5 +105,28 @@ npm run lint
 
 ---
 
+## 🌐 Deployment
+
+The application is deployed on **IONOS Hosting** and linked to the domain **[park-auto.site](http://park-auto.site)**.
+
+### How to Deploy Updates:
+1. Build the project locally to generate the latest production files:
+   ```bash
+   npm run build
+   ```
+2. Open an FTP/SFTP client (like **FileZilla**).
+3. Connect to the IONOS server:
+   * **Host:** `hosting2504832.online.pro`
+   * **Port:** `22` (SFTP) or `21` (FTP)
+   * **Username:** `hosting2504832` (or your configured FTP user)
+4. Upload all files and folders from the local `dist/` directory into the remote directory:
+   ```
+   /park-auto/
+   ```
+   *(Make sure you upload the **contents** of the `dist/` directory, not the `dist/` folder itself, so that `index.html` resides in the root of the `/park-auto` folder).*
+
+---
+
 ## 📄 License
 This project is licensed under the MIT License - see the LICENSE.txt file for details.
+
