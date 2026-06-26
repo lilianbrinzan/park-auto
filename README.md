@@ -107,7 +107,7 @@ npm run lint
 
 ## 🌐 Deployment
 
-The application is deployed on **IONOS Hosting** and linked to the domain **[park-auto.site](http://park-auto.site)**.
+The application is deployed on **IONOS Hosting** and linked to the domain **[park-auto.site](https://park-auto.site)**.
 
 ### How to Deploy Updates:
 1. Build the project locally to generate the latest production files:
