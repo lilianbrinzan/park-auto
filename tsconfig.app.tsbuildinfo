@@ -1,1 +1,1 @@
-{"root":["./src/app.test.tsx","./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/parkingscene3d.tsx"],"version":"6.0.3"}
+{"root":["./src/app.test.tsx","./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/navigationagentchat.tsx","./src/components/parkingscene3d.tsx","./src/utils/policyengine.ts"],"version":"6.0.3"}

@@ -9,6 +9,7 @@ import {
   Calendar
 } from 'lucide-react';
 import ParkingScene3D from './components/ParkingScene3D';
+import NavigationAgentChat from './components/NavigationAgentChat';
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {
   size?: number;
@@ -274,6 +275,9 @@ function App() {
       <footer className="footer">
         <p>© 2026 park-auto. Toate drepturile rezervate. str. Sfatul Ţării, nr. 2, or. Chişinău, Republica Moldova.</p>
       </footer>
+
+      {/* AI Navigation Assistant Chat Widget */}
+      <NavigationAgentChat />
     </div>
   );
 }
