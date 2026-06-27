@@ -28,15 +28,15 @@ Quick shortcuts are integrated for support and interaction via WhatsApp, Telegra
 4. Enhanced Redirection Security:
 All external links opening in new tabs utilize the rel="noopener noreferrer" security attribute, eliminating Reverse Tabnabbing vulnerabilities and ensuring a safe browsing experience for users.
 
-5. Asistent de Navigație Inteligent (Chatbot AI):
-Un widget de chat plasat în colțul din dreapta-jos care ghidează utilizatorii către parcare:
- - Asistență conversațională: Utilizatorii pot menționa locația de pornire și aplicația dorită pentru a obține linkul de traseu.
- - Gating Semantic & Protecție Date Personale (PII): Motorul de politici de securitate filtrează și blochează numerele de telefon, e-mailurile sau tentativele de prompt injection.
- - Human-in-the-Loop & Panou Vibe Diff: Înainte de a redirecționa utilizatorul, sistemul afișează un panou de verificare care compară intenția utilizatorului cu argumentele exacte ale funcției de navigare, solicitând aprobare explicită.
- - Validare Structurală: Parametrii extrași sunt validați conform unei scheme stricte înainte de apelare.
+5. Intelligent Navigation Assistant (AI Chatbot):
+A chat widget located in the bottom-right corner that guides users to the parking lot:
+ - Conversational assistance: Users can specify their starting location and preferred mapping application to generate the route link.
+ - Semantic Gating & PII Protection: The security policy engine filters and blocks phone numbers, emails, or prompt injection attempts.
+ - Human-in-the-Loop & Vibe Diff Panel: Before redirecting the user, the system displays a verification panel comparing the user's intent with the exact arguments of the navigation function, requesting explicit approval.
+ - Structural Validation: Extracted parameters are validated against a strict schema before execution.
 
-6. Mediu de Execuție Securizat (Docker Sandboxing):
-Proiectul include un fișier de configurare Docker dedicat (.gemini/sandbox.Dockerfile) pentru a rula instrucțiunile și instrumentele asistentului de dezvoltare într-un mediu complet izolat (sandbox), protejând sistemul gazdă.
+6. Secure Execution Environment (Docker Sandboxing):
+The project includes a dedicated Docker configuration file (.gemini/sandbox.Dockerfile) to run the development assistant's instructions and tools within a completely isolated environment (sandbox), protecting the host system.
 
 ---
 
@@ -49,6 +49,6 @@ Proiectul include un fișier de configurare Docker dedicat (.gemini/sandbox.Dock
 
  * Lucide React: A collection of modern icons used to provide clean, straightforward visual navigation.
 
- * Motor de Politici de Securitate și Vibe Diff: Un sistem personalizat implementat în [policyEngine.ts](file:///c:/Project/park-auto/src/utils/policyEngine.ts) și [NavigationAgentChat.tsx](file:///c:/Project/park-auto/src/components/NavigationAgentChat.tsx) care asigură aplicarea politicilor de securitate, blocarea datelor personale/prompt injection și confirmarea explicită a acțiunilor (Human-in-the-Loop) înainte de a executa navigarea externă.
+ * Security Policy Engine & Vibe Diff: A custom system implemented in [policyEngine.ts](file:///c:/Project/park-auto/src/utils/policyEngine.ts) and [NavigationAgentChat.tsx](file:///c:/Project/park-auto/src/components/NavigationAgentChat.tsx) that enforces security policies, blocks personal data/prompt injections, and requests explicit confirmation (Human-in-the-Loop) before executing external navigation.
 
- * Docker: Utilizat pentru securizarea mediului de dezvoltare pe parcursul sarcinilor administrative.
+ * Docker: Used for secure containerization of the development environment during administrative tasks.
