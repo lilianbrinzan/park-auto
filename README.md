@@ -20,6 +20,10 @@ Built for speed, accessibility, and fluid user experience, the application featu
   * **Google Maps:** Uses the native `geo:` protocol launcher on mobile devices for seamless in-app transition and web fallback on desktops.
   * **Waze:** A universal redirection link preventing native schema resolution issues.
   * **Parkopedia:** Direct linkage to parking index details pre-configured for the exact coordinates.
+* **🤖 AI Navigation Assistant Chatbot:** Interactive chat widget that guides users with custom routes:
+  * **Semantic Gating:** Scans input queries in real time to filter out PII (emails, phone numbers) and prompt injections.
+  * **Human-in-the-Loop Verification (Vibe Diff):** Intercepts actions to show user intent versus the planned tool call, requiring explicit approval before triggering the redirect.
+  * **Structural Check:** Validates input parameters schema before executing navigation link generation.
 * **💬 Instant & Secure Communication:** Direct quick-connect buttons for Telegram, WhatsApp, and Facebook.
 * **🔒 Strict Security Practices:** External links protected against **Reverse Tabnabbing** using `rel="noopener noreferrer"`.
 * **⚡ Type-Safe Architecture:** Entirely written in **TypeScript** to prevent runtime errors and ensure high code quality.
@@ -55,8 +59,11 @@ park-auto/
 │   ├── index.css        # Core styles & Design tokens
 │   ├── vite-env.d.ts    # Vite environment type declarations
 │   ├── App.test.tsx     # Unit tests
-│   └── components/
-│       └── ParkingScene3D.tsx # Interactive 3D scene (Three.js/R3F)
+│   ├── components/
+│   │   ├── ParkingScene3D.tsx     # Interactive 3D scene (Three.js/R3F)
+│   │   └── NavigationAgentChat.tsx # AI Navigation Assistant Widget (Vibe Diff panel)
+│   └── utils/
+│       └── policyEngine.ts        # Structural and Semantic Policy Gating (PII, Injections)
 └── public/              # Static assets (images, icons)
 ```
 
@@ -102,6 +109,9 @@ npm run lint
 2. **Resource Reuse:** Box and Cylinder geometries, along with standard physical materials, are declared outside the render loop in the module scope to prevent memory leaks and garbage collection stutters.
 3. **No-Lag Resize Listeners:** The window resize handler uses `window.matchMedia` query listeners rather than global resize polling, avoiding unnecessary re-renders on mobile browser scroll address-bar resizing.
 4. **Vulnerability Mitigation:** Safe external routing prevents malicious window control exploits (`tabnabbing`).
+5. **Semantic Gating (PII & Injection Protection):** Implemented in `policyEngine.ts` to scan user inputs for phone numbers, email addresses, and prompt injection patterns (e.g., "ignore previous instructions"). If detected, the input is immediately blocked.
+6. **Human-in-the-Loop & Vibe Diff Verification:** A security mechanism in the chat component requires the user to explicitly approve or reject a routing action. A Vibe Diff UI panel compares the user's intent with the actual parameters of the `generateNavigationLink` tool before the browser redirects.
+7. **Structural Parameter Gating:** Validates extracted parameters against an allowed schema (e.g., matching origin non-emptiness and appType to a strict list of allowed mapping applications) prior to calling external APIs.
 
 ---
 

@@ -28,8 +28,15 @@ Quick shortcuts are integrated for support and interaction via WhatsApp, Telegra
 4. Enhanced Redirection Security:
 All external links opening in new tabs utilize the rel="noopener noreferrer" security attribute, eliminating Reverse Tabnabbing vulnerabilities and ensuring a safe browsing experience for users.
 
-5. Secure Execution Environment (Docker Sandboxing):
-The project includes a dedicated Docker configuration file (.gemini/sandbox.Dockerfile) to run the development assistant's instructions and tools within a completely isolated environment (sandbox), protecting the host system.
+5. Asistent de Navigație Inteligent (Chatbot AI):
+Un widget de chat plasat în colțul din dreapta-jos care ghidează utilizatorii către parcare:
+ - Asistență conversațională: Utilizatorii pot menționa locația de pornire și aplicația dorită pentru a obține linkul de traseu.
+ - Gating Semantic & Protecție Date Personale (PII): Motorul de politici de securitate filtrează și blochează numerele de telefon, e-mailurile sau tentativele de prompt injection.
+ - Human-in-the-Loop & Panou Vibe Diff: Înainte de a redirecționa utilizatorul, sistemul afișează un panou de verificare care compară intenția utilizatorului cu argumentele exacte ale funcției de navigare, solicitând aprobare explicită.
+ - Validare Structurală: Parametrii extrași sunt validați conform unei scheme stricte înainte de apelare.
+
+6. Mediu de Execuție Securizat (Docker Sandboxing):
+Proiectul include un fișier de configurare Docker dedicat (.gemini/sandbox.Dockerfile) pentru a rula instrucțiunile și instrumentele asistentului de dezvoltare într-un mediu complet izolat (sandbox), protejând sistemul gazdă.
 
 ---
 
@@ -42,4 +49,6 @@ The project includes a dedicated Docker configuration file (.gemini/sandbox.Dock
 
  * Lucide React: A collection of modern icons used to provide clean, straightforward visual navigation.
 
- * Docker: Utilized for secure containerization during administrative tasks.
+ * Motor de Politici de Securitate și Vibe Diff: Un sistem personalizat implementat în [policyEngine.ts](file:///c:/Project/park-auto/src/utils/policyEngine.ts) și [NavigationAgentChat.tsx](file:///c:/Project/park-auto/src/components/NavigationAgentChat.tsx) care asigură aplicarea politicilor de securitate, blocarea datelor personale/prompt injection și confirmarea explicită a acțiunilor (Human-in-the-Loop) înainte de a executa navigarea externă.
+
+ * Docker: Utilizat pentru securizarea mediului de dezvoltare pe parcursul sarcinilor administrative.
