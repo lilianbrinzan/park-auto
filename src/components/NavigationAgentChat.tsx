@@ -8,9 +8,30 @@ import {
   ShieldCheck, 
   Check, 
   Bot,
-  User
+  User,
+  Settings
 } from 'lucide-react';
+import { GoogleGenAI } from '@google/genai';
 import { checkSemanticPolicy, validateNavigationParams, NavigationParams } from '../utils/policyEngine';
+
+const safeLocalStorage = {
+  getItem: (key: string): string | null => {
+    if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined' && typeof window.localStorage.getItem === 'function') {
+      return window.localStorage.getItem(key);
+    }
+    return null;
+  },
+  setItem: (key: string, value: string): void => {
+    if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined' && typeof window.localStorage.setItem === 'function') {
+      window.localStorage.setItem(key, value);
+    }
+  },
+  removeItem: (key: string): void => {
+    if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined' && typeof window.localStorage.removeItem === 'function') {
+      window.localStorage.removeItem(key);
+    }
+  }
+};
 
 interface Message {
   id: string;
@@ -32,6 +53,8 @@ export default function NavigationAgentChat() {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isThinking, setIsThinking] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [apiKey, setApiKey] = useState(() => safeLocalStorage.getItem('gemini_api_key') || '');
 
   // State matching current intent
   const [extractedOrigin, setExtractedOrigin] = useState<string | null>(null);
@@ -91,38 +114,89 @@ export default function NavigationAgentChat() {
 
     // 3. Process message
     setIsThinking(true);
-    setTimeout(() => {
-      setIsThinking(false);
-      processAgentResponse(text);
+    setTimeout(async () => {
+      try {
+        await processAgentResponse(text, newMessages);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsThinking(false);
+      }
     }, 1200);
   };
 
-  const processAgentResponse = (userInput: string) => {
+  const runOfflineRuleBased = (userInput: string) => {
     const inputLower = userInput.toLowerCase();
+
+    // 1. Detect language
+    let lang: 'ro' | 'en' | 'de' | 'ru' = 'ro'; // Default to Romanian
+    if (inputLower.match(/\b(how|get|from|to|hello|hi|street|route|start)\b/)) {
+      lang = 'en';
+    } else if (inputLower.match(/\b(wie|komme|ich|aus|von|hallo|route|strasse|straße)\b/)) {
+      lang = 'de';
+    } else if (inputLower.match(/(как|доехать|из|от|привет|здравствуйте|маршрут|улица)/)) {
+      lang = 'ru';
+    }
+
+    // Translations for offline feedback
+    const t = {
+      ro: {
+        askApp: (origin: string) => `Am înțeles că plecați din **${origin}**. Ce aplicație de navigare preferați să folosiți: **Google Maps** sau **Waze**?`,
+        askOrigin: (app: string) => `Voi folosi **${app}** pentru traseu. Îmi puteți spune care este punctul de pornire (orașul, sectorul sau strada)?`,
+        askBoth: () => 'Pentru a vă ghida corect, vă rog să îmi spuneți locația de pornire și ce aplicație preferați (Google Maps sau Waze). De exemplu: *"Cum ajung din Orhei cu Waze?"*'
+      },
+      en: {
+        askApp: (origin: string) => `I understand you are starting from **${origin}**. Which navigation app do you prefer: **Google Maps** or **Waze**?`,
+        askOrigin: (app: string) => `I will use **${app}** for routing. Could you please specify your starting location (city, district, or street)?`,
+        askBoth: () => 'To guide you correctly, please provide your starting location and preferred navigation app (Google Maps or Waze). For example: *"How do I get from Orhei using Waze?"*'
+      },
+      de: {
+        askApp: (origin: string) => `Ich verstehe, dass Sie aus **${origin}** kommen. Welche Navigations-App bevorzugen Sie: **Google Maps** oder **Waze**?`,
+        askOrigin: (app: string) => `Ich werde **${app}** für die Route verwenden. Können Sie bitte Ihren Startpunkt (Stadt, Stadtteil oder Straße) angeben?`,
+        askBoth: () => 'Um Sie richtig zu leiten, geben Sie bitte Ihren Startpunkt und Ihre bevorzugte Navigations-App (Google Maps oder Waze) an. Zum Beispiel: *"Wie komme ich aus Orhei mit Waze?"*'
+      },
+      ru: {
+        askApp: (origin: string) => `Я понял, что вы едете из **${origin}**. Какое навигационное приложение вы предпочитаете: **Google Maps** или **Waze**?`,
+        askOrigin: (app: string) => `Я буду использовать **${app}** для маршрута. Не могли бы вы указать точку отправления (город, район или улицу)?`,
+        askBoth: () => 'Чтобы направить вас правильно, пожалуйста, укажите место отправления и предпочитаемое приложение (Google Maps или Waze). Например: *"Как доехать из Оргеева с помощью Waze?"*'
+      }
+    };
 
     // Simple NLP extraction for prototype
     let detectedApp: 'Google Maps' | 'Waze' | null = extractedApp;
     if (inputLower.includes('waze')) {
       detectedApp = 'Waze';
       setExtractedApp('Waze');
-    } else if (inputLower.includes('google maps') || inputLower.includes('google') || inputLower.includes('maps') || inputLower.includes('harti') || inputLower.includes('hartă')) {
+    } else if (inputLower.includes('google maps') || inputLower.includes('google') || inputLower.includes('maps') || inputLower.includes('harti') || inputLower.includes('hartă') || inputLower.includes('карты') || inputLower.includes('karten')) {
       detectedApp = 'Google Maps';
       setExtractedApp('Google Maps');
     }
 
     // Exclude noise words from potential origins
     let detectedOrigin: string | null = extractedOrigin;
-    const commonWords = ['waze', 'google', 'maps', 'harti', 'hartă', 'cum', 'ajung', 'din', 'de', 'la', 'salut', 'buna', 'vă', 'parcare', 'traseu', 'navigatie', 'navigare'];
+    const commonWords = [
+      'waze', 'google', 'maps', 'harti', 'hartă', 'cum', 'ajung', 'din', 'de', 'la', 'salut', 'buna', 'vă', 'parcare', 'traseu', 'navigatie', 'navigare',
+      'how', 'get', 'from', 'to', 'hello', 'hi', 'route', 'navigation', 'start',
+      'wie', 'komme', 'ich', 'aus', 'von', 'hallo', 'strasse', 'straße',
+      'как', 'доехать', 'из', 'от', 'привет', 'здравствуйте', 'маршрут', 'карты'
+    ];
     
     // Attempt to extract origin
-    // Ex: "din Botanica", "de la Balti", "vin de la Orhei"
-    const fromKeywords = ['din', 'la', 'de la', 'de la ', 'vin din', 'plec din'];
+    const fromKeywords = [
+      // Romanian
+      'din', 'la', 'de la', 'de la ', 'vin din', 'plec din',
+      // English
+      'from', 'starting from', 'coming from', 'start at',
+      // German
+      'aus', 'von', 'ab', 'starten in',
+      // Russian
+      'из', 'от', 'с', 'еду из', 'начиная с'
+    ];
     let foundOrigin = false;
     for (const keyword of fromKeywords) {
       const index = inputLower.indexOf(keyword);
       if (index !== -1) {
         const remainingText = userInput.substring(index + keyword.length).trim();
-        // Take the first 1-2 words as the location name
         const cleanLocation = remainingText.split(/[,\s.?]+/)[0];
         if (cleanLocation && cleanLocation.length > 2 && !commonWords.includes(cleanLocation.toLowerCase())) {
           detectedOrigin = cleanLocation;
@@ -133,12 +207,11 @@ export default function NavigationAgentChat() {
       }
     }
 
-    // Fallback search if no keywords found: check single words that aren't common
+    // Fallback search
     if (!foundOrigin && !detectedOrigin) {
       const words = userInput.split(/[,\s.?]+/);
       for (const word of words) {
         if (word.length > 2 && !commonWords.includes(word.toLowerCase()) && word[0] === word[0].toUpperCase()) {
-          // Capitalized words are likely locations
           detectedOrigin = word;
           setExtractedOrigin(word);
           break;
@@ -146,46 +219,146 @@ export default function NavigationAgentChat() {
       }
     }
 
-    // Decision tree for agent response
+    // Decision tree
     if (detectedOrigin && detectedApp) {
-      // We have both! Trigger Vibe Diff flow
       setPendingAction({
         origin: detectedOrigin,
         appType: detectedApp
       });
     } else if (detectedOrigin && !detectedApp) {
-      // Missing app
       setMessages(prev => [
         ...prev,
         {
           id: Math.random().toString(36).substring(7),
           sender: 'agent',
-          text: `Am înțeles că plecați din **${detectedOrigin}**. Ce aplicație de navigare preferați să folosiți: **Google Maps** sau **Waze**?`,
+          text: t[lang].askApp(detectedOrigin!),
           timestamp: new Date()
         }
       ]);
     } else if (!detectedOrigin && detectedApp) {
-      // Missing origin
       setMessages(prev => [
         ...prev,
         {
           id: Math.random().toString(36).substring(7),
           sender: 'agent',
-          text: `Voi folosi **${detectedApp}** pentru traseu. Îmi puteți spune care este punctul de pornire (orașul, sectorul sau strada)?`,
+          text: t[lang].askOrigin(detectedApp!),
           timestamp: new Date()
         }
       ]);
     } else {
-      // Missing both or generic question
       setMessages(prev => [
         ...prev,
         {
           id: Math.random().toString(36).substring(7),
           sender: 'agent',
-          text: 'Pentru a vă ghida corect, vă rog să îmi spuneți locația de pornire și ce aplicație preferați (Google Maps sau Waze). De exemplu: *"Cum ajung din Orhei cu Waze?"*',
+          text: t[lang].askBoth(),
           timestamp: new Date()
         }
       ]);
+    }
+  };
+
+  const processAgentResponse = async (userInput: string, currentMessages: Message[]) => {
+    const savedKey = safeLocalStorage.getItem('gemini_api_key');
+    if (savedKey) {
+      try {
+        const ai = new GoogleGenAI({ apiKey: savedKey });
+        
+        // Exclude system/error messages from prompt context to avoid confusing the model
+        const chatHistory = currentMessages
+          .filter(m => m.sender !== 'system')
+          .map(m => ({
+            role: m.sender === 'user' ? 'user' : 'model',
+            parts: [{ text: m.text }]
+          }));
+
+        const systemInstruction = `Ești Asistentul de Navigație Inteligent pentru parcarea Park-Auto (str. Sfatul Țării 2, Chișinău). 
+Locația exactă a parcării este: latitudinea 47.02269, longitudinea 28.81857.
+
+Sarcina ta este să extragi două informații cheie din conversație:
+1. Punctul de pornire al utilizatorului (de exemplu: sectorul Botanica, orașul Orhei, sau strada). Câmpul "origin" din JSON.
+2. Aplicația de navigație dorită (care trebuie să fie exact "Google Maps" sau "Waze"). Câmpul "appType" din JSON.
+
+Răspunde ÎNTOTDEAUNA exclusiv sub forma unui obiect JSON valid cu următoarele chei:
+- "origin": Numele locației de pornire (string, sau null dacă nu este menționat/clar încă).
+- "appType": Aplicația preferată, care poate fi doar "Google Maps" sau "Waze" (string, sau null dacă nu este menționată clar încă).
+- "message": Răspunsul tău către utilizator (string). Răspunde ÎNTOTDEAUNA în aceeași limbă în care a comunicat utilizatorul (română, engleză, germană, rusă etc.). Fii politicos și de ajutor. Dacă lipsește una dintre informații (origin sau appType), cere-o politicos în aceeași limbă în "message". Dacă le ai pe amândouă, explică în "message" (în limba utilizatorului) că urmează să generezi ruta de navigare.
+
+Nu adăuga formatări suplimentare în afara JSON-ului brut.`;
+
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: chatHistory.map(item => ({
+            role: item.role,
+            parts: item.parts
+          })),
+          config: {
+            systemInstruction: systemInstruction,
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: 'object',
+              properties: {
+                origin: { type: ['string', 'null'] },
+                appType: { 
+                  type: ['string', 'null'], 
+                  enum: ['Google Maps', 'Waze', null] 
+                },
+                message: { type: 'string' }
+              },
+              required: ['message']
+            }
+          }
+        });
+
+        const responseText = response.text || '';
+        const result = JSON.parse(responseText.trim());
+
+        if (result.message) {
+          setMessages(prev => [
+            ...prev,
+            {
+              id: Math.random().toString(36).substring(7),
+              sender: 'agent',
+              text: result.message,
+              timestamp: new Date()
+            }
+          ]);
+        }
+
+        let updatedOrigin = extractedOrigin;
+        let updatedApp = extractedApp;
+
+        if (result.origin) {
+          updatedOrigin = result.origin;
+          setExtractedOrigin(result.origin);
+        }
+        if (result.appType) {
+          updatedApp = result.appType;
+          setExtractedApp(result.appType);
+        }
+
+        if (updatedOrigin && updatedApp) {
+          setPendingAction({
+            origin: updatedOrigin,
+            appType: updatedApp
+          });
+        }
+      } catch (error: any) {
+        console.error('Gemini API Error:', error);
+        setMessages(prev => [
+          ...prev,
+          {
+            id: Math.random().toString(36).substring(7),
+            sender: 'system',
+            text: `[EROARE API GEMINI] A apărut o eroare la apelarea modelului AI: ${error.message || error}. Se folosește modul offline ca fallback.`,
+            timestamp: new Date(),
+            isPolicyError: true
+          }
+        ]);
+        runOfflineRuleBased(userInput);
+      }
+    } else {
+      runOfflineRuleBased(userInput);
     }
   };
 
@@ -320,7 +493,7 @@ export default function NavigationAgentChat() {
             }}
           >
             {/* Header */}
-            <div className="agent-chat-header">
+            <div className="agent-chat-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div className="header-info">
                 <div className="bot-avatar">
                   <Bot size={20} />
@@ -330,10 +503,105 @@ export default function NavigationAgentChat() {
                   <span className="status-badge"><span className="status-dot"></span> Navigație Inteligentă</span>
                 </div>
               </div>
-              <button onClick={resetAgentState} className="btn-reset" title="Resetează discuția">
-                Reset
-              </button>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button 
+                  onClick={() => setShowSettings(!showSettings)} 
+                  className={`btn-settings ${showSettings ? 'active' : ''}`}
+                  title="Configurare Cheie API"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: showSettings ? '#646CFF' : '#94A3B8',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'color 0.2s'
+                  }}
+                >
+                  <Settings size={18} />
+                </button>
+                <button onClick={resetAgentState} className="btn-reset" title="Resetează discuția">
+                  Reset
+                </button>
+              </div>
             </div>
+
+            {/* Settings Panel */}
+            {showSettings && (
+              <div 
+                className="settings-panel"
+                style={{
+                  padding: '16px',
+                  backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                  borderBottom: '1px solid rgba(255,255,255,0.05)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                  fontSize: '0.8rem',
+                  color: '#E2E8F0',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                }}
+              >
+                <div style={{ fontWeight: 600, color: '#646CFF' }}>CONFIGURARE CHEIE GEMINI API</div>
+                <p style={{ margin: 0, color: '#94A3B8', fontSize: '0.75rem', lineHeight: '1.25' }}>
+                  Pentru a activa agentul real Gemini (ADK), introduceți cheia dvs. API de la Google AI Studio. Aceasta este salvată doar local în browserul dvs.
+                </p>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="password"
+                    placeholder="Cheie API..."
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    style={{
+                      flex: 1,
+                      backgroundColor: 'rgba(0,0,0,0.3)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '8px',
+                      padding: '8px 12px',
+                      color: '#fff',
+                      fontSize: '0.75rem',
+                      outline: 'none'
+                    }}
+                  />
+                  <button
+                    onClick={() => {
+                      const trimmedKey = apiKey.trim();
+                      if (trimmedKey) {
+                        safeLocalStorage.setItem('gemini_api_key', trimmedKey);
+                      } else {
+                        safeLocalStorage.removeItem('gemini_api_key');
+                      }
+                      setShowSettings(false);
+                      setMessages(prev => [
+                        ...prev,
+                        {
+                          id: Math.random().toString(36).substring(7),
+                          sender: 'system',
+                          text: trimmedKey 
+                            ? 'Cheia API Gemini a fost salvată. Asistentul va rula folosind Gemini AI!'
+                            : 'Cheia API a fost ștearsă. Asistentul va rula în modul offline.',
+                          timestamp: new Date()
+                        }
+                      ]);
+                    }}
+                    style={{
+                      backgroundColor: '#646CFF',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '8px 12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      fontSize: '0.75rem'
+                    }}
+                  >
+                    Salvează
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Message Area */}
             <div className="agent-messages-container" style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
