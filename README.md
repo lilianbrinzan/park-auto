@@ -7,7 +7,7 @@
 [![Oxlint](https://img.shields.io/badge/Oxlint-1.69-orange.svg)](https://github.com/oxc-project/oxc)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE.txt)
 
-A modern, highly interactive web application designed to help users locate and visually inspect a premium secured parking lot in the center of Chișinău (2 Sfatul Țării Street).
+A modern, highly interactive web application designed to helps users locate and visually inspect a premium secured parking lot in the center of Chisinău (2 Sfatul Țării Street).
 
 Built for speed, accessibility, and fluid user experience, the application features an interactive 3D scene, device-responsive GPS navigation launchers, and secure communication channels.
 
