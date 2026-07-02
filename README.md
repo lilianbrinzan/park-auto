@@ -20,10 +20,14 @@ Built for speed, accessibility, and fluid user experience, the application featu
   * **Google Maps:** Uses the native `geo:` protocol launcher on mobile devices for seamless in-app transition and web fallback on desktops.
   * **Waze:** A universal redirection link preventing native schema resolution issues.
   * **Parkopedia:** Direct linkage to parking index details pre-configured for the exact coordinates.
-* **🤖 AI Navigation Assistant Chatbot:** Interactive chat widget that guides users with custom routes:
-  * **Semantic Gating:** Scans input queries in real time to filter out PII (emails, phone numbers) and prompt injections.
+* **🤖 AI Navigation Assistant Chatbot:** Real-time LLM-backed chat widget powered by the official `@google/genai` SDK using `gemini-2.5-flash`:
+  * **Multilingual:** Seamlessly detects and responds in the user's language (Romanian, English, German, Russian, etc.).
+  * **API Key Panel (GUI):** Allows secure client-side setup in the chat window, storing keys locally in `localStorage` (no hardcoded credentials).
+  * **Offline Fallback:** Automatic offline rule-based detection for RO, EN, DE, and RU queries when no API key is available.
+  * **Semantic Gating:** Scans input queries in real time to filter out PII (emails, phone numbers) and prompt injections before calling the API.
   * **Human-in-the-Loop Verification (Vibe Diff):** Intercepts actions to show user intent versus the planned tool call, requiring explicit approval before triggering the redirect.
   * **Structural Check:** Validates input parameters schema before executing navigation link generation.
+* **🔌 Local Model Context Protocol (MCP) Server:** A typescript MCP server located in the [mcp-server/](file:///c:/Project/park-auto/mcp-server/) folder using `@modelcontextprotocol/sdk`. Runs on stdio and exposes the tool `get_parking_details` containing the address, coordinates, and parking properties.
 * **💬 Instant & Secure Communication:** Direct quick-connect buttons for Telegram, WhatsApp, and Facebook.
 * **🔒 Strict Security Practices:** External links protected against **Reverse Tabnabbing** using `rel="noopener noreferrer"`.
 * **⚡ Type-Safe Architecture:** Entirely written in **TypeScript** to prevent runtime errors and ensure high code quality.
@@ -35,6 +39,8 @@ Built for speed, accessibility, and fluid user experience, the application featu
 * **Frontend Framework:** React 19 (Single Page Application)
 * **Language:** TypeScript 5 (Strict Mode enabled)
 * **3D Rendering:** Three.js & React Three Fiber (R3F) & `@react-three/drei`
+* **AI Integration:** `@google/genai` (SDK for Gemini API calls)
+* **Model Context Protocol:** `@modelcontextprotocol/sdk` (for local MCP Server)
 * **Animations:** Framer Motion (for smooth micro-interactions and transitions)
 * **Iconography:** Lucide React
 * **Build Tool:** Vite 8 (extremely fast Hot Module Replacement)
