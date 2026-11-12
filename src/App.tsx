@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { 
   MapPin, 
   Clock, 
@@ -180,13 +179,7 @@ function App() {
         {/* Info Sections */}
         <section className="info-section">
           {/* Card 1: Despre noi */}
-          <motion.div 
-            className="info-card glass-panel"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
+          <div className="info-card glass-panel">
             <div className="card-icon" aria-hidden="true">
               <Info size={24} aria-hidden="true" />
             </div>
@@ -197,16 +190,10 @@ function App() {
             <p className="card-content" style={{ fontSize: '0.85rem' }}>
               Spațiul nostru este monitorizat și configurat pentru a asigura un flux auto facil și un grad ridicat de protecție pentru vehiculul dumneavoastră.
             </p>
-          </motion.div>
+          </div>
 
           {/* Card 2: Informații Operaționale */}
-          <motion.div 
-            className="info-card glass-panel"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
+          <div className="info-card glass-panel">
             <div className="card-icon" aria-hidden="true">
               <Clock size={24} aria-hidden="true" />
             </div>
@@ -221,16 +208,10 @@ function App() {
                 <span className="info-item-value">{hours}</span>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Card 3: Canale de Contact & Social Media */}
-          <motion.div 
-            className="info-card glass-panel"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
+          <div className="info-card glass-panel">
             <div className="card-icon" aria-hidden="true">
               <Phone size={24} aria-hidden="true" />
             </div>
@@ -273,7 +254,7 @@ function App() {
                 Abonează-te pe Facebook
               </a>
             </div>
-          </motion.div>
+          </div>
         </section>
       </main>
 

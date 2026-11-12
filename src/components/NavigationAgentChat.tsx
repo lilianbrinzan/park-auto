@@ -531,8 +531,8 @@ Nu adăuga formatări suplimentare în afara JSON-ului brut.`;
               position: 'fixed',
               bottom: '90px',
               right: '24px',
-              width: '380px',
-              height: '520px',
+              width: 'min(380px, calc(100vw - 48px))',
+              height: 'min(520px, calc(100vh - 180px))',
               zIndex: 1000,
               display: 'flex',
               flexDirection: 'column',
@@ -581,9 +581,8 @@ Nu adăuga formatări suplimentare în afara JSON-ului brut.`;
                   type="button"
                   onClick={resetAgentState}
                   className="btn-reset"
-                  aria-label="Resetează discuția"
                 >
-                  Reset
+                  Reset <span className="visually-hidden">discuție</span>
                 </button>
               </div>
             </div>
