@@ -11,8 +11,50 @@ import {
   User,
   Settings
 } from 'lucide-react';
-import { GoogleGenAI } from '@google/genai';
 import { checkSemanticPolicy, validateNavigationParams, NavigationParams } from '../utils/policyEngine';
+
+function escapeHtml(raw: string): string {
+  return raw
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function FormattedMessage({ text }: { text: string }) {
+  const spanRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const el = spanRef.current;
+    if (!el) return;
+
+    const html = escapeHtml(text)
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+    if ('setHTML' in Element.prototype) {
+      (el as any).setHTML(html, {
+        sanitizer: { elements: ['strong', 'em', 'b', 'i'] }
+      });
+    } else {
+      el.innerHTML = html;
+    }
+  }, [text]);
+
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return (
+    <span ref={spanRef}>
+      {parts.map((part, idx) =>
+        part.startsWith('**') && part.endsWith('**') ? (
+          <strong key={idx}>{part.slice(2, -2)}</strong>
+        ) : (
+          part
+        )
+      )}
+    </span>
+  );
+}
 
 const safeLocalStorage = {
   getItem: (key: string): string | null => {
@@ -262,6 +304,7 @@ export default function NavigationAgentChat() {
     const savedKey = safeLocalStorage.getItem('gemini_api_key');
     if (savedKey) {
       try {
+        const { GoogleGenAI } = await import('@google/genai');
         const ai = new GoogleGenAI({ apiKey: savedKey });
         
         // Exclude system/error messages from prompt context to avoid confusing the model
@@ -458,13 +501,17 @@ Nu adăuga formatări suplimentare în afara JSON-ului brut.`;
       {/* Floating Action Button */}
       <div className="agent-trigger-container" style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 999 }}>
         <motion.button
+          type="button"
           onClick={() => setIsOpen(!isOpen)}
           className={`agent-chat-button ${isOpen ? 'active' : ''}`}
+          aria-label={isOpen ? 'Închide asistentul de navigație' : 'Deschide asistentul de navigație'}
+          aria-expanded={isOpen}
+          aria-controls="agent-chat-dialog"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          {isOpen ? <X size={24} /> : <MessageSquare size={24} />}
-          {!isOpen && <span className="pulse-dot"></span>}
+          {isOpen ? <X size={24} aria-hidden="true" /> : <MessageSquare size={24} aria-hidden="true" />}
+          {!isOpen && <span className="pulse-dot" aria-hidden="true"></span>}
         </motion.button>
       </div>
 
@@ -472,6 +519,9 @@ Nu adăuga formatări suplimentare în afara JSON-ului brut.`;
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            id="agent-chat-dialog"
+            role="dialog"
+            aria-labelledby="agent-chat-title"
             className="agent-chat-window glass-panel"
             initial={{ opacity: 0, y: 100, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -495,34 +545,44 @@ Nu adăuga formatări suplimentare în afara JSON-ului brut.`;
             {/* Header */}
             <div className="agent-chat-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div className="header-info">
-                <div className="bot-avatar">
-                  <Bot size={20} />
+                <div className="bot-avatar" aria-hidden="true">
+                  <Bot size={20} aria-hidden="true" />
                 </div>
                 <div>
-                  <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600 }}>Asistent AI Parcare</h4>
-                  <span className="status-badge"><span className="status-dot"></span> Navigație Inteligentă</span>
+                  <h2 id="agent-chat-title" style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600 }}>Asistent AI Parcare</h2>
+                  <span className="status-badge"><span className="status-dot" aria-hidden="true"></span> Navigație Inteligentă</span>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <button 
+                  type="button"
                   onClick={() => setShowSettings(!showSettings)} 
                   className={`btn-settings ${showSettings ? 'active' : ''}`}
-                  title="Configurare Cheie API"
+                  aria-label="Configurare Cheie API"
+                  aria-expanded={showSettings}
+                  aria-controls="agent-settings-panel"
                   style={{
                     background: 'none',
                     border: 'none',
                     color: showSettings ? '#646CFF' : '#94A3B8',
                     cursor: 'pointer',
                     padding: '4px',
+                    minWidth: '28px',
+                    minHeight: '28px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     transition: 'color 0.2s'
                   }}
                 >
-                  <Settings size={18} />
+                  <Settings size={18} aria-hidden="true" />
                 </button>
-                <button onClick={resetAgentState} className="btn-reset" title="Resetează discuția">
+                <button
+                  type="button"
+                  onClick={resetAgentState}
+                  className="btn-reset"
+                  aria-label="Resetează discuția"
+                >
                   Reset
                 </button>
               </div>
@@ -531,6 +591,7 @@ Nu adăuga formatări suplimentare în afara JSON-ului brut.`;
             {/* Settings Panel */}
             {showSettings && (
               <div 
+                id="agent-settings-panel"
                 className="settings-panel"
                 style={{
                   padding: '16px',
@@ -544,28 +605,37 @@ Nu adăuga formatări suplimentare în afara JSON-ului brut.`;
                   boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                 }}
               >
-                <div style={{ fontWeight: 600, color: '#646CFF' }}>CONFIGURARE CHEIE GEMINI API</div>
-                <p style={{ margin: 0, color: '#94A3B8', fontSize: '0.75rem', lineHeight: '1.25' }}>
+                <label htmlFor="gemini-api-key-input" style={{ fontWeight: 600, color: '#818CF8' }}>
+                  CONFIGURARE CHEIE GEMINI API
+                </label>
+                <p id="gemini-api-key-hint" style={{ margin: 0, color: '#CBD5E1', fontSize: '0.75rem', lineHeight: '1.25' }}>
                   Pentru a activa agentul real Gemini (ADK), introduceți cheia dvs. API de la Google AI Studio. Aceasta este salvată doar local în browserul dvs.
                 </p>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <input
+                    id="gemini-api-key-input"
+                    name="gemini_api_key"
                     type="password"
                     placeholder="Cheie API..."
+                    aria-describedby="gemini-api-key-hint"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="none"
+                    spellCheck={false}
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
                     style={{
                       flex: 1,
                       backgroundColor: 'rgba(0,0,0,0.3)',
-                      border: '1px solid rgba(255,255,255,0.1)',
+                      border: '1px solid rgba(255,255,255,0.2)',
                       borderRadius: '8px',
                       padding: '8px 12px',
                       color: '#fff',
-                      fontSize: '0.75rem',
-                      outline: 'none'
+                      fontSize: 'max(1rem, 1em)'
                     }}
                   />
                   <button
+                    type="button"
                     onClick={() => {
                       const trimmedKey = apiKey.trim();
                       if (trimmedKey) {
@@ -587,7 +657,7 @@ Nu adăuga formatări suplimentare în afara JSON-ului brut.`;
                       ]);
                     }}
                     style={{
-                      backgroundColor: '#646CFF',
+                      backgroundColor: '#4F46E5',
                       color: '#fff',
                       border: 'none',
                       borderRadius: '8px',
@@ -604,38 +674,43 @@ Nu adăuga formatări suplimentare în afara JSON-ului brut.`;
             )}
 
             {/* Message Area */}
-            <div className="agent-messages-container" style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div
+              className="agent-messages-container"
+              role="log"
+              aria-live="polite"
+              style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}
+            >
               {messages.map((msg) => (
                 <div key={msg.id} className={`message-row ${msg.sender}`}>
                   {msg.sender === 'agent' && (
-                    <div className="msg-icon bot">
-                      <Bot size={14} />
+                    <div className="msg-icon bot" aria-hidden="true">
+                      <Bot size={14} aria-hidden="true" />
                     </div>
                   )}
                   {msg.sender === 'user' && (
-                    <div className="msg-icon user">
-                      <User size={14} />
+                    <div className="msg-icon user" aria-hidden="true">
+                      <User size={14} aria-hidden="true" />
                     </div>
                   )}
                   <div className={`message-bubble ${msg.sender} ${msg.isPolicyError ? 'error' : ''}`}>
                     {msg.sender === 'system' && (
                       <div className="system-indicator">
-                        <ShieldAlert size={14} style={{ marginRight: '6px' }} />
+                        <ShieldAlert size={14} aria-hidden="true" style={{ marginRight: '6px' }} />
                         <strong>Sistem Security</strong>
                       </div>
                     )}
-                    <span dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }}></span>
+                    <FormattedMessage text={msg.text} />
                   </div>
                 </div>
               ))}
 
               {/* Thinking Indicator */}
               {isThinking && (
-                <div className="message-row agent">
-                  <div className="msg-icon bot animate-pulse">
-                    <Bot size={14} />
+                <div className="message-row agent" role="status" aria-label="Asistentul procesează răspunsul">
+                  <div className="msg-icon bot animate-pulse" aria-hidden="true">
+                    <Bot size={14} aria-hidden="true" />
                   </div>
-                  <div className="message-bubble agent thinking">
+                  <div className="message-bubble agent thinking" aria-hidden="true">
                     <span></span>
                     <span></span>
                     <span></span>
@@ -658,11 +733,11 @@ Nu adăuga formatări suplimentare în afara JSON-ului brut.`;
                     boxShadow: '0 10px 20px rgba(0,0,0,0.5)'
                   }}
                 >
-                  <div className="vibe-diff-header" style={{ display: 'flex', alignItems: 'center', color: '#646CFF', marginBottom: '10px', fontSize: '0.85rem', fontWeight: 600 }}>
-                    <ShieldCheck size={18} style={{ marginRight: '6px' }} />
+                  <div className="vibe-diff-header" style={{ display: 'flex', alignItems: 'center', color: '#818CF8', marginBottom: '10px', fontSize: '0.85rem', fontWeight: 600 }}>
+                    <ShieldCheck size={18} aria-hidden="true" style={{ marginRight: '6px' }} />
                     <span>VERIFICARE SECURITATE (VIBE DIFF)</span>
                   </div>
-                  <p style={{ margin: '0 0 8px 0', fontSize: '0.8rem', color: '#94A3B8' }}>
+                  <p style={{ margin: '0 0 8px 0', fontSize: '0.8rem', color: '#CBD5E1' }}>
                     Agentul propune apelarea unui tool extern de navigare. Te rugăm să verifici diferența dintre intenția ta și execuția planificată:
                   </p>
                   
@@ -674,7 +749,7 @@ Nu adăuga formatări suplimentare în afara JSON-ului brut.`;
                       <span style={{ color: '#FCD34D' }}>[Tool Apelat]:</span> <code>generateNavigationLink(origin: "{pendingAction.origin}", appType: "{pendingAction.appType}")</code>.
                     </div>
                     <div style={{ color: '#E2E8F0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      <span style={{ color: '#93C5FD' }}>[Traseu Final URL]:</span> <code title="URL destinație" style={{ fontSize: '0.7rem', color: '#60A5FA' }}>
+                      <span style={{ color: '#93C5FD' }}>[Traseu Final URL]:</span> <code style={{ fontSize: '0.7rem', color: '#60A5FA' }}>
                         {pendingAction.appType === 'Waze' 
                           ? `waze.com/ul?ll=47.02269,28.81857&navigate=yes` 
                           : `google.com/maps/dir/?api=1&origin=${encodeURIComponent(pendingAction.origin)}...`}
@@ -683,11 +758,11 @@ Nu adăuga formatări suplimentare în afara JSON-ului brut.`;
                   </div>
 
                   <div className="vibe-diff-actions" style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={handleApprove} className="btn-vibe-approve" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', padding: '8px', backgroundColor: '#10B981', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
-                      <Check size={14} /> Aprobă
+                    <button type="button" onClick={handleApprove} className="btn-vibe-approve" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', padding: '8px', backgroundColor: '#047857', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
+                      <Check size={14} aria-hidden="true" /> Aprobă
                     </button>
-                    <button onClick={handleReject} className="btn-vibe-reject" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', padding: '8px', backgroundColor: '#EF4444', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
-                      <X size={14} /> Respinge
+                    <button type="button" onClick={handleReject} className="btn-vibe-reject" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', padding: '8px', backgroundColor: '#B91C1C', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
+                      <X size={14} aria-hidden="true" /> Respinge
                     </button>
                   </div>
                 </motion.div>
@@ -697,35 +772,54 @@ Nu adăuga formatări suplimentare în afara JSON-ului brut.`;
             </div>
 
             {/* Input Area */}
-            <div className="agent-chat-input" style={{ padding: '12px', borderTop: '1px solid rgba(255,255,255,0.05)', backgroundColor: 'rgba(15, 23, 42, 0.4)', display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <form
+              className="agent-chat-input"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSend();
+              }}
+              style={{ padding: '12px', borderTop: '1px solid rgba(255,255,255,0.05)', backgroundColor: 'rgba(15, 23, 42, 0.4)', display: 'flex', gap: '8px', alignItems: 'center' }}
+            >
+              <label htmlFor="chat-message-input" className="visually-hidden">
+                Mesaj sau adresă de pornire
+              </label>
               <input
+                id="chat-message-input"
+                name="message"
                 type="text"
                 placeholder="Scrie un mesaj sau o adresă de pornire..."
+                enterKeyHint="send"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleSend();
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (e.nativeEvent.isComposing || e.keyCode === 229) {
+                      return;
+                    }
+                    handleSend();
+                  }
                 }}
                 disabled={isThinking || !!pendingAction}
                 style={{
                   flex: 1,
                   backgroundColor: 'rgba(0,0,0,0.2)',
-                  border: '1px solid rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(255,255,255,0.2)',
                   borderRadius: '12px',
                   padding: '10px 14px',
                   color: '#fff',
-                  fontSize: '0.85rem',
-                  outline: 'none'
+                  fontSize: 'max(1rem, 1em)'
                 }}
               />
               <button
-                onClick={() => handleSend()}
+                type="submit"
+                aria-label="Trimite mesajul"
                 disabled={isThinking || !!pendingAction || !inputValue.trim()}
                 className="btn-send-msg"
               >
-                <Send size={16} />
+                <Send size={16} aria-hidden="true" />
               </button>
-            </div>
+            </form>
           </motion.div>
         )}
       </AnimatePresence>

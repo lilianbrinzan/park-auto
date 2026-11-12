@@ -108,13 +108,15 @@ const WHEEL_POSITIONS: [number, number, number][] = [
 interface GlassCarProps {
   position?: [number, number, number];
   active?: boolean;
+  reducedMotion?: boolean;
 }
 
 // Procedural sleek 3D Car Model with Glassmorphic materials
-function GlassCar({ position = [0, 0.4, 0], active = false }: GlassCarProps) {
+function GlassCar({ position = [0, 0.4, 0], active = false, reducedMotion = false }: GlassCarProps) {
   const carRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
   const positionRef = useRef<[number, number, number]>(position);
+  const elapsedRef = useRef(0);
 
   // Sincronizăm prop-ul de poziție cu ref-ul local pentru a evita stuttering în useFrame
   useEffect(() => {
@@ -122,8 +124,10 @@ function GlassCar({ position = [0, 0.4, 0], active = false }: GlassCarProps) {
   }, [position]);
 
   // Animate the car (subtle breathing/floating effect)
-  useFrame((state) => {
-    const t = state.clock.getElapsedTime();
+  useFrame((_, delta) => {
+    if (reducedMotion) return;
+    elapsedRef.current += delta;
+    const t = elapsedRef.current;
     if (carRef.current) {
       carRef.current.position.y = positionRef.current[1] + Math.sin(t * 1.5) * 0.05;
       carRef.current.rotation.y = t * 0.1;
@@ -210,24 +214,37 @@ function ParkingGrid() {
 
 export default function ParkingScene3D() {
   const [isMobile, setIsMobile] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+
     // Înlocuim resize listener-ul global cu matchMedia pentru a evita re-randările infinite pe ecranele mobile la scroll
     const mediaQuery = window.matchMedia('(max-width: 767px)');
     setIsMobile(mediaQuery.matches);
 
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReducedMotion(motionQuery.matches);
+
     const handleChange = (e: MediaQueryListEvent) => {
       setIsMobile(e.matches);
     };
+    const handleMotionChange = (e: MediaQueryListEvent) => {
+      setReducedMotion(e.matches);
+    };
 
     mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
+    motionQuery.addEventListener('change', handleMotionChange);
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange);
+      motionQuery.removeEventListener('change', handleMotionChange);
+    };
   }, []);
 
   return (
-    <div className="hero-canvas-container glass-panel">
-      <div className="grid-overlay" />
-      <Canvas shadows gl={{ antialias: true, alpha: true }}>
+    <div className="hero-canvas-container glass-panel" role="img" aria-label="Vizualizare 3D interactivă a locurilor de parcare">
+      <div className="grid-overlay" aria-hidden="true" />
+      <Canvas shadows={{ type: THREE.PCFShadowMap }} gl={{ antialias: true, alpha: true }}>
         <PerspectiveCamera makeDefault position={[0, 4, 7]} fov={50} />
         
         {/* Lighting setup for tech glow */}
@@ -244,13 +261,13 @@ export default function ParkingScene3D() {
         <ParkingGrid />
         
         {/* Center active car */}
-        <GlassCar position={[0, 0.4, 0]} active={true} />
+        <GlassCar position={[0, 0.4, 0]} active={true} reducedMotion={reducedMotion} />
         
         {/* Side decorative cars - hidden on mobile */}
         {!isMobile && (
           <>
-            <GlassCar position={[-2.8, 0.4, 0.5]} active={false} />
-            <GlassCar position={[2.8, 0.4, -0.5]} active={false} />
+            <GlassCar position={[-2.8, 0.4, 0.5]} active={false} reducedMotion={reducedMotion} />
+            <GlassCar position={[2.8, 0.4, -0.5]} active={false} reducedMotion={reducedMotion} />
           </>
         )}
 
@@ -258,7 +275,7 @@ export default function ParkingScene3D() {
           enableZoom={false} 
           maxPolarAngle={Math.PI / 2.2} 
           minPolarAngle={Math.PI / 4}
-          autoRotate
+          autoRotate={!reducedMotion}
           autoRotateSpeed={0.5}
         />
       </Canvas>

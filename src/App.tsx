@@ -17,6 +17,7 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
 
 const FacebookIcon = ({ size = 24, ...props }: IconProps) => (
   <svg
+    aria-hidden="true"
     viewBox="0 0 24 24"
     width={size}
     height={size}
@@ -33,6 +34,7 @@ const FacebookIcon = ({ size = 24, ...props }: IconProps) => (
 
 const WhatsAppIcon = ({ size = 24, ...props }: IconProps) => (
   <svg
+    aria-hidden="true"
     viewBox="0 0 24 24"
     width={size}
     height={size}
@@ -45,6 +47,7 @@ const WhatsAppIcon = ({ size = 24, ...props }: IconProps) => (
 
 const TelegramIcon = ({ size = 24, ...props }: IconProps) => (
   <svg
+    aria-hidden="true"
     viewBox="0 0 24 24"
     width={size}
     height={size}
@@ -82,11 +85,21 @@ function App() {
     <div className="app-container">
       {/* Premium Header */}
       <header className="header">
+        <a href="#hero-heading" className="skip-link visually-hidden">
+          Sari la conținutul principal
+        </a>
         <div className="logo-container">
-          <img src="/Logo.png" alt="park-auto logo" className="logo-img" width="48" height="48" />
+          <img
+            src="/Logo.png"
+            alt="park-auto logo"
+            className="logo-img"
+            width="48"
+            height="48"
+            fetchPriority="high"
+          />
           <span className="logo-title">park-auto</span>
         </div>
-        <div className="btn-group" style={{ margin: 0, gap: '0.5rem' }}>
+        <nav aria-label="Navigare rapidă" className="btn-group" style={{ margin: 0, gap: '0.5rem' }}>
           <a 
             href={wazeUrl} 
             target="_blank" 
@@ -94,7 +107,7 @@ function App() {
             className="btn btn-secondary" 
             style={{ padding: '0.5rem 0.75rem', fontSize: '0.75rem', borderRadius: '12px', gap: '0.35rem' }}
           >
-            <Navigation size={12} />
+            <Navigation size={12} aria-hidden="true" />
             Waze
           </a>
           <a 
@@ -104,172 +117,165 @@ function App() {
             className="btn btn-secondary" 
             style={{ padding: '0.5rem 0.75rem', fontSize: '0.75rem', borderRadius: '12px', gap: '0.35rem' }}
           >
-            <MapPin size={12} />
+            <MapPin size={12} aria-hidden="true" />
             Maps
           </a>
-        </div>
+        </nav>
       </header>
 
-      {/* Hero Section */}
-      <section className="hero-section">
-        <motion.div 
-          className="hero-content"
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        >
-          <div className="hero-badge">Servicii Parcare Premium</div>
-          <h1 className="hero-title">
-            Parcare securizată în Centru <span>Park Auto</span>
-          </h1>
-          <p className="hero-subtitle" style={{ fontSize: '1.2rem', fontWeight: 500, color: 'var(--text-primary)' }}>
-            Soluție practică pentru cei care caută un loc sigur de parcare!
-          </p>
-          <p className="hero-subtitle">
-            Găsește instant un loc liber și parchează în siguranță în centrul capitalei, pe strada Sfatul Țării nr. 2.
-          </p>
-          
-          <div className="btn-group">
-            <a 
-              id="btn-waze-hero"
-              href={wazeUrl} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="btn btn-waze"
-            >
-              <Navigation size={16} />
-              Navigare Waze
-            </a>
-            <a 
-              id="btn-google-hero"
-              href={googleMapsUrl} 
-              target={isMobileDevice ? "_self" : "_blank"} 
-              rel={isMobileDevice ? undefined : "noopener noreferrer"} 
-              className="btn btn-google-maps"
-            >
-              <MapPin size={16} />
-              Google Maps
-            </a>
-            <a 
-              id="btn-parkopedia-hero"
-              href={parkopediaUrl} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="btn btn-parkopedia"
-            >
-              <Info size={16} />
-              Parkopedia
-            </a>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, ease: "easeOut" }}
-        >
-          <ParkingScene3D />
-        </motion.div>
-      </section>
-
-      {/* Info Sections */}
-      <section className="info-section">
-        {/* Card 1: Despre noi */}
-        <motion.div 
-          className="info-card glass-panel"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="card-icon">
-            <Info size={24} />
-          </div>
-          <h2 className="card-title">Despre Parcare</h2>
-          <p className="card-content">
-            Oferim servicii de parcare cu plată în Chișinău, strada Sfatul Țării nr. 2.
-          </p>
-          <p className="card-content" style={{ fontSize: '0.85rem' }}>
-            Spațiul nostru este monitorizat și configurat pentru a asigura un flux auto facil și un grad ridicat de protecție pentru vehiculul dumneavoastră.
-          </p>
-        </motion.div>
-
-        {/* Card 2: Informații Operaționale */}
-        <motion.div 
-          className="info-card glass-panel"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-        >
-          <div className="card-icon">
-            <Clock size={24} />
-          </div>
-          <h2 className="card-title">Informații</h2>
-          <div className="card-content" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <div className="info-item">
-              <span className="info-item-label"><MapPin size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} /> Adresă</span>
-              <span className="info-item-value">{address}</span>
-            </div>
-            <div className="info-item">
-              <span className="info-item-label"><Calendar size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} /> Program</span>
-              <span className="info-item-value">{hours}</span>
+      <main id="main-content">
+        {/* Hero Section */}
+        <section className="hero-section">
+          <div className="hero-content">
+            <div className="hero-badge">Servicii Parcare Premium</div>
+            <h1 id="hero-heading" tabIndex={-1} className="hero-title">
+              Parcare securizată în Centru <span>Park Auto</span>
+            </h1>
+            <p className="hero-subtitle" style={{ fontSize: '1.2rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+              Soluție practică pentru cei care caută un loc sigur de parcare!
+            </p>
+            <p className="hero-subtitle">
+              Găsește instant un loc liber și parchează în siguranță în centrul capitalei, pe strada Sfatul Țării nr. 2.
+            </p>
+            
+            <div className="btn-group">
+              <a 
+                id="btn-waze-hero"
+                href={wazeUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="btn btn-waze"
+              >
+                <Navigation size={16} aria-hidden="true" />
+                Navigare Waze
+              </a>
+              <a 
+                id="btn-google-hero"
+                href={googleMapsUrl} 
+                target={isMobileDevice ? "_self" : "_blank"} 
+                rel={isMobileDevice ? undefined : "noopener noreferrer"} 
+                className="btn btn-google-maps"
+              >
+                <MapPin size={16} aria-hidden="true" />
+                Google Maps
+              </a>
+              <a 
+                id="btn-parkopedia-hero"
+                href={parkopediaUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="btn btn-parkopedia"
+              >
+                <Info size={16} aria-hidden="true" />
+                Parkopedia
+              </a>
             </div>
           </div>
-        </motion.div>
 
-        {/* Card 3: Canale de Contact & Social Media */}
-        <motion.div 
-          className="info-card glass-panel"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          <div className="card-icon">
-            <Phone size={24} />
+          <div>
+            <ParkingScene3D />
           </div>
-          <h2 className="card-title">Contact</h2>
-          <p className="card-content">
-            Pentru asistență, disponibilitate locuri și întrebări suplimentare, ne puteți contacta direct sau să ne urmăriți pe Facebook.
-          </p>
-          <div className="btn-group" style={{ marginTop: '0.5rem' }}>
-            <a 
-              id="btn-whatsapp"
-              href={whatsappUrl} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="btn btn-whatsapp"
-              style={{ flex: '1 1 120px' }}
-            >
-              <WhatsAppIcon size={16} />
-              WhatsApp
-            </a>
-            <a 
-              id="btn-telegram"
-              href={telegramUrl} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="btn btn-telegram"
-              style={{ flex: '1 1 120px' }}
-            >
-              <TelegramIcon size={16} />
-              Telegram
-            </a>
-            <a 
-              id="btn-facebook"
-              href={facebookUrl} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="btn btn-facebook"
-              style={{ width: '100%' }}
-            >
-              <FacebookIcon size={16} />
-              Abonează-te pe Facebook
-            </a>
-          </div>
-        </motion.div>
-      </section>
+        </section>
+
+        {/* Info Sections */}
+        <section className="info-section">
+          {/* Card 1: Despre noi */}
+          <motion.div 
+            className="info-card glass-panel"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="card-icon" aria-hidden="true">
+              <Info size={24} aria-hidden="true" />
+            </div>
+            <h2 className="card-title">Despre Parcare</h2>
+            <p className="card-content">
+              Oferim servicii de parcare cu plată în Chișinău, strada Sfatul Țării nr. 2.
+            </p>
+            <p className="card-content" style={{ fontSize: '0.85rem' }}>
+              Spațiul nostru este monitorizat și configurat pentru a asigura un flux auto facil și un grad ridicat de protecție pentru vehiculul dumneavoastră.
+            </p>
+          </motion.div>
+
+          {/* Card 2: Informații Operaționale */}
+          <motion.div 
+            className="info-card glass-panel"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            <div className="card-icon" aria-hidden="true">
+              <Clock size={24} aria-hidden="true" />
+            </div>
+            <h2 className="card-title">Informații</h2>
+            <div className="card-content" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <div className="info-item">
+                <span className="info-item-label"><MapPin size={14} aria-hidden="true" style={{ marginRight: '4px', verticalAlign: 'middle' }} /> Adresă</span>
+                <span className="info-item-value">{address}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-item-label"><Calendar size={14} aria-hidden="true" style={{ marginRight: '4px', verticalAlign: 'middle' }} /> Program</span>
+                <span className="info-item-value">{hours}</span>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Card 3: Canale de Contact & Social Media */}
+          <motion.div 
+            className="info-card glass-panel"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <div className="card-icon" aria-hidden="true">
+              <Phone size={24} aria-hidden="true" />
+            </div>
+            <h2 className="card-title">Contact</h2>
+            <p className="card-content">
+              Pentru asistență, disponibilitate locuri și întrebări suplimentare, ne puteți contacta direct sau să ne urmăriți pe Facebook.
+            </p>
+            <div className="btn-group" style={{ marginTop: '0.5rem' }}>
+              <a 
+                id="btn-whatsapp"
+                href={whatsappUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="btn btn-whatsapp"
+                style={{ flex: '1 1 120px' }}
+              >
+                <WhatsAppIcon size={16} />
+                WhatsApp
+              </a>
+              <a 
+                id="btn-telegram"
+                href={telegramUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="btn btn-telegram"
+                style={{ flex: '1 1 120px' }}
+              >
+                <TelegramIcon size={16} />
+                Telegram
+              </a>
+              <a 
+                id="btn-facebook"
+                href={facebookUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="btn btn-facebook"
+                style={{ width: '100%' }}
+              >
+                <FacebookIcon size={16} />
+                Abonează-te pe Facebook
+              </a>
+            </div>
+          </motion.div>
+        </section>
+      </main>
 
       {/* Premium Footer */}
       <footer className="footer">

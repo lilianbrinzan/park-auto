@@ -20,6 +20,40 @@
   padding: 0;
 }
 
+/* Hides content visually but keeps it in the accessibility tree.
+   :focus-within / :active opt elements out — useful for skip links and
+   any focusable content wrapped in this class. */
+.visually-hidden:where(:not(:focus-within, :active)) {
+  position: absolute !important;
+  clip-path: inset(50%) !important;
+  overflow: hidden !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  white-space: nowrap !important;
+}
+
+.skip-link:is(:focus-within, :active) {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 1001;
+  background: var(--text-primary);
+  color: #ffffff;
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+:where(a:any-link, button, input):focus-visible {
+  outline: 3px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
 body {
   font-family: var(--font-family);
   background-color: var(--bg-color);
@@ -173,6 +207,8 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 2.5rem;
+  content-visibility: auto;
+  contain-intrinsic-size: auto none auto 420px;
 }
 
 .info-card {
@@ -281,15 +317,15 @@ body {
 }
 
 .btn-waze {
-  background: #33ccff;
+  background: #007399;
   color: #ffffff;
-  box-shadow: 0 4px 15px rgba(51, 204, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 115, 153, 0.2);
 }
 
 .btn-waze:hover {
   transform: translateY(-2px);
-  background: #2cb5e3;
-  box-shadow: 0 8px 24px rgba(51, 204, 255, 0.35);
+  background: #005c7a;
+  box-shadow: 0 8px 24px rgba(0, 115, 153, 0.35);
 }
 
 .btn-parkopedia {
@@ -305,51 +341,51 @@ body {
 }
 
 .btn-google-maps {
-  background: #34a853;
+  background: #1e7e34;
   color: #ffffff;
-  box-shadow: 0 4px 15px rgba(52, 168, 83, 0.2);
+  box-shadow: 0 4px 15px rgba(30, 126, 52, 0.2);
 }
 
 .btn-google-maps:hover {
   transform: translateY(-2px);
-  background: #2e964a;
-  box-shadow: 0 8px 24px rgba(52, 168, 83, 0.35);
+  background: #19692c;
+  box-shadow: 0 8px 24px rgba(30, 126, 52, 0.35);
 }
 
 .btn-facebook {
-  background: #1877f2;
+  background: #1259c3;
   color: #ffffff;
-  box-shadow: 0 4px 15px rgba(24, 119, 242, 0.2);
+  box-shadow: 0 4px 15px rgba(18, 89, 195, 0.2);
 }
 
 .btn-facebook:hover {
   transform: translateY(-2px);
-  background: #166fe5;
-  box-shadow: 0 8px 24px rgba(24, 119, 242, 0.35);
+  background: #0e489e;
+  box-shadow: 0 8px 24px rgba(18, 89, 195, 0.35);
 }
 
 .btn-whatsapp {
-  background: #25d366;
+  background: #0f7a3c;
   color: #ffffff;
-  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.2);
+  box-shadow: 0 4px 15px rgba(15, 122, 60, 0.2);
 }
 
 .btn-whatsapp:hover {
   transform: translateY(-2px);
-  background: #20ba5a;
-  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.35);
+  background: #0c6330;
+  box-shadow: 0 8px 24px rgba(15, 122, 60, 0.35);
 }
 
 .btn-telegram {
-  background: #0088cc;
+  background: #006699;
   color: #ffffff;
-  box-shadow: 0 4px 15px rgba(0, 136, 204, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 102, 153, 0.2);
 }
 
 .btn-telegram:hover {
   transform: translateY(-2px);
-  background: #0077b3;
-  box-shadow: 0 8px 24px rgba(0, 136, 204, 0.35);
+  background: #00527a;
+  box-shadow: 0 8px 24px rgba(0, 102, 153, 0.35);
 }
 
 /* Footer style */
@@ -451,7 +487,9 @@ body {
   background-color: #10B981;
   border: 2px solid var(--text-primary, #0f172a);
   box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-  animation: pulse-animation 2s infinite;
+  @media (prefers-reduced-motion: no-preference) {
+    animation: pulse-animation 2s infinite;
+  }
 }
 
 @keyframes pulse-animation {
@@ -475,6 +513,7 @@ body {
   backdrop-filter: blur(20px) !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
   color: #f1f5f9;
+  contain: layout style paint;
 }
 
 .agent-chat-header {
@@ -632,7 +671,9 @@ body {
   background-color: #818cf8;
   border-radius: 50%;
   display: inline-block;
-  animation: bounce 1.4s infinite ease-in-out both;
+  @media (prefers-reduced-motion: no-preference) {
+    animation: bounce 1.4s infinite ease-in-out both;
+  }
 }
 
 .message-bubble.thinking span:nth-child(1) {
